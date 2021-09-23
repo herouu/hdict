@@ -1,12 +1,10 @@
 DROP TABLE IF EXISTS `sys_user`;
-CREATE TABLE `sys_user` (
-  `id` int(11) NOT NULL AUTO_INCREMENT,
-  `name` varchar(255) DEFAULT NULL,
-  `department_id` int(11) DEFAULT NULL,
-  `create_time` datetime DEFAULT NULL,
-  PRIMARY KEY (`id`)
-) ;
-
+CREATE TABLE "sys_user" (
+  "id" integer NOT NULL PRIMARY KEY AUTOINCREMENT,
+  "name" varchar(255) DEFAULT NULL,
+  "department_id" int(11) DEFAULT NULL,
+  "create_time" datetime DEFAULT NULL
+);
 BEGIN;
 INSERT INTO `sys_user` VALUES (1, 'lijz', 1, NULL);
 INSERT INTO `sys_user` VALUES (2, 'lucy', 1, NULL);
