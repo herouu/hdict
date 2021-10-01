@@ -1,9 +1,8 @@
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
-import io.github.herouu.QuickTest;
+import io.github.herouu.QueryWord;
 import org.beetl.core.ReThrowConsoleErrorHandler;
 import org.beetl.sql.core.*;
-import org.beetl.sql.core.db.MySqlStyle;
 import org.beetl.sql.core.db.SQLiteStyle;
 import org.beetl.sql.ext.DebugInterceptor;
 import org.beetl.sql.gen.SourceBuilder;
@@ -18,7 +17,7 @@ public class CodeGen {
 
 
     private static DataSource datasource() {
-        String path = QuickTest.class.getResource("/db.properties").getPath();
+        String path = QueryWord.class.getResource("/db.properties").getPath();
         HikariDataSource ds = new HikariDataSource(new HikariConfig(path));
         return ds;
     }

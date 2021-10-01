@@ -1,6 +1,7 @@
 package io.github.herouu;
 
 // import org.fusesource.jansi.AnsiConsole;
+
 import org.fusesource.jansi.AnsiConsole;
 import org.jline.console.SystemRegistry;
 import org.jline.console.impl.Builtins;
@@ -8,22 +9,17 @@ import org.jline.console.impl.SystemRegistryImpl;
 import org.jline.keymap.KeyMap;
 import org.jline.reader.*;
 import org.jline.reader.impl.DefaultParser;
-import org.jline.reader.impl.LineReaderImpl;
 import org.jline.terminal.Terminal;
 import org.jline.terminal.TerminalBuilder;
 import org.jline.widget.TailTipWidgets;
 import picocli.CommandLine;
-import picocli.CommandLine.ArgGroup;
 import picocli.CommandLine.Command;
-import picocli.CommandLine.Option;
-import picocli.CommandLine.ParentCommand;
 import picocli.shell.jline3.PicocliCommands;
 import picocli.shell.jline3.PicocliCommands.PicocliCommandsFactory;
 
 import java.io.PrintWriter;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.concurrent.TimeUnit;
 import java.util.function.Supplier;
 
 /**
@@ -46,13 +42,14 @@ public class Example {
                     ""},
             footer = {"", "Press Ctrl-D to exit."},
             subcommands = {
-                    MyCommand.class, PicocliCommands.ClearScreen.class, CommandLine.HelpCommand.class})
+                    QwCommand.class, PicocliCommands.ClearScreen.class, CommandLine.HelpCommand.class})
     static class CliCommands implements Runnable {
         PrintWriter out;
 
-        CliCommands() {}
+        CliCommands() {
+        }
 
-        public void setReader(LineReader reader){
+        public void setReader(LineReader reader) {
             out = reader.getTerminal().writer();
         }
 
@@ -61,82 +58,15 @@ public class Example {
         }
     }
 
-    /**
-     * A command with some options to demonstrate completion.
-     */
-    @Command(name = "cmd", mixinStandardHelpOptions = true, version = "1.0",
-            description = {"Command with some options to demonstrate TAB-completion.",
-                    " (Note that enum values also get completed.)"},
-            subcommands = {Nested.class, CommandLine.HelpCommand.class})
-    static class MyCommand implements Runnable {
-        @Option(names = {"-v", "--verbose"},
-                description = { "Specify multiple -v options to increase verbosity.",
-                        "For example, `-v -v -v` or `-vvv`"})
-        private boolean[] verbosity = {};
-
-        @ArgGroup(exclusive = false)
-        private MyDuration myDuration = new MyDuration();
-
-        static class MyDuration {
-            @Option(names = {"-d", "--duration"},
-                    description = "The duration quantity.",
-                    required = true)
-            private int amount;
-
-            @Option(names = {"-u", "--timeUnit"},
-                    description = "The duration time unit.",
-                    required = true)
-            private TimeUnit unit;
-        }
-
-        @ParentCommand CliCommands parent;
-
-        public void run() {
-            if (verbosity.length > 0) {
-                parent.out.printf("Hi there. You asked for %d %s.%n",
-                        myDuration.amount, myDuration.unit);
-            } else {
-                parent.out.println("hi!");
-            }
-        }
-    }
-
-    @Command(name = "nested", mixinStandardHelpOptions = true, subcommands = {CommandLine.HelpCommand.class},
-            description = "Hosts more sub-subcommands")
-    static class Nested implements Runnable {
-        public void run() {
-            System.out.println("I'm a nested subcommand. I don't do much, but I have sub-subcommands!");
-        }
-
-        @Command(mixinStandardHelpOptions = true, subcommands = {CommandLine.HelpCommand.class},
-                description = "Multiplies two numbers.")
-        public void multiply(@Option(names = {"-l", "--left"}, required = true) int left,
-                             @Option(names = {"-r", "--right"}, required = true) int right) {
-            System.out.printf("%d * %d = %d%n", left, right, left * right);
-        }
-
-        @Command(mixinStandardHelpOptions = true, subcommands = {CommandLine.HelpCommand.class},
-                description = "Adds two numbers.")
-        public void add(@Option(names = {"-l", "--left"}, required = true) int left,
-                        @Option(names = {"-r", "--right"}, required = true) int right) {
-            System.out.printf("%d + %d = %d%n", left, right, left + right);
-        }
-
-        @Command(mixinStandardHelpOptions = true, subcommands = {CommandLine.HelpCommand.class},
-                description = "Subtracts two numbers.")
-        public void subtract(@Option(names = {"-l", "--left"}, required = true) int left,
-                             @Option(names = {"-r", "--right"}, required = true) int right) {
-            System.out.printf("%d - %d = %d%n", left, right, left - right);
-        }
-    }
 
     public static void main(String[] args) {
+        QueryWord.initSqlManager();
         AnsiConsole.systemInstall();
         try {
             Supplier<Path> workDir = () -> Paths.get(System.getProperty("user.dir"));
             // set up JLine built-in commands
             Builtins builtins = new Builtins(workDir, null, null);
-            builtins.rename(Builtins.Command.HISTORY, "top");
+            builtins.rename(Builtins.Command.TTOP, "top");
             builtins.alias("zle", "widget");
             builtins.alias("bindkey", "keymap");
             // set up picocli commands
@@ -155,6 +85,7 @@ public class Example {
                 SystemRegistry systemRegistry = new SystemRegistryImpl(parser, terminal, workDir, null);
                 systemRegistry.setCommandRegistries(builtins, picocliCommands);
                 systemRegistry.register("help", picocliCommands);
+                systemRegistry.register("exit", picocliCommands);
 
                 LineReader reader = LineReaderBuilder.builder()
                         .terminal(terminal)
@@ -170,7 +101,7 @@ public class Example {
                 KeyMap<Binding> keyMap = reader.getKeyMaps().get("main");
                 keyMap.bind(new Reference("tailtip-toggle"), KeyMap.alt("s"));
 
-                String prompt = "prompt> ";
+                String prompt = "dict> ";
                 String rightPrompt = null;
 
                 // start the shell and process input until the user quits with Ctrl-D
@@ -184,15 +115,17 @@ public class Example {
                         // Ignore
                     } catch (EndOfFileException e) {
                         return;
-                    } catch (Exception e) {
-                        // systemRegistry.trace(e);
+                    } catch (NullPointerException e){
+
+                    }catch (Exception e) {
+                        systemRegistry.trace(e);
                     }
                 }
             }
         } catch (Throwable t) {
-            t.printStackTrace();
+            // t.printStackTrace();
         } finally {
-            // AnsiConsole.systemUninstall();
+            AnsiConsole.systemUninstall();
         }
     }
 }
