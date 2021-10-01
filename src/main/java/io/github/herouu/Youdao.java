@@ -1,9 +1,10 @@
 package io.github.herouu;
 
 import com.ejlchina.okhttps.HTTP;
-import org.apache.commons.codec.digest.DigestUtils;
 
 import java.util.UUID;
+
+import static cn.hutool.crypto.digest.DigestUtil.sha256Hex;
 
 public class Youdao {
 
@@ -14,11 +15,11 @@ public class Youdao {
     public static void main(String[] args) {
         String input = "vert";
         String appKey = "46c46d5afd6fcea0";
-        String appSecret  = "tLmgIm4dHlgaHfzcAVAdXdQFZU10nQCw";
+        String appSecret = "tLmgIm4dHlgaHfzcAVAdXdQFZU10nQCw";
         String salt = UUID.randomUUID().toString();
-        long currentTime = System.currentTimeMillis()/1000;
+        long currentTime = System.currentTimeMillis() / 1000;
         String originalString = appKey + input + salt + currentTime + appSecret;
-        String sign = DigestUtils.sha256Hex(originalString);
+        String sign = sha256Hex(originalString);
         String s = http.sync("/api").addBodyPara("q", input)
                 .addBodyPara("from", "en")
                 .addBodyPara("to", "zh-CHS")

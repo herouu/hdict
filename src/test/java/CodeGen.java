@@ -4,6 +4,7 @@ import io.github.herouu.QuickTest;
 import org.beetl.core.ReThrowConsoleErrorHandler;
 import org.beetl.sql.core.*;
 import org.beetl.sql.core.db.MySqlStyle;
+import org.beetl.sql.core.db.SQLiteStyle;
 import org.beetl.sql.ext.DebugInterceptor;
 import org.beetl.sql.gen.SourceBuilder;
 import org.beetl.sql.gen.SourceConfig;
@@ -34,7 +35,7 @@ public class CodeGen {
         //拦截器，非必须，这里设置一个debug拦截器，可以详细查看执行后的sql和sql参数
         builder.setInters(new Interceptor[]{new DebugInterceptor()});
         //数据库风格，因为用的是H2,所以使用H2Style,
-        builder.setDbStyle(new MySqlStyle());
+        builder.setDbStyle(new SQLiteStyle());
         SQLManager sqlManager = builder.build();
         return sqlManager;
     }
@@ -46,16 +47,16 @@ public class CodeGen {
         SourceBuilder mdBuilder = new MDSourceBuilder();
 
         sourceBuilder.add(entityBuilder);
-        sourceBuilder.add(mapperBuilder);
-        sourceBuilder.add(mdBuilder);
+        // sourceBuilder.add(mapperBuilder);
+        // sourceBuilder.add(mdBuilder);
 
         SourceConfig config = new SourceConfig(getSQLManager(),sourceBuilder);
 
 //如果有错误，抛出异常而不是继续运行1
         EntitySourceBuilder.getGroupTemplate().setErrorHandler(new ReThrowConsoleErrorHandler() );
 
-        SimpleMavenProject project = new SimpleMavenProject();
-        String tableName = "en_words";
+        SimpleMavenProject project = new SimpleMavenProject("io.github.herouu");
+        String tableName = "oxford";
 //可以在控制台看到生成的所有代码
         config.gen(tableName,project);
     }

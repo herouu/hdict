@@ -4,10 +4,11 @@ import com.ejlchina.okhttps.HTTP;
 import com.ejlchina.okhttps.HttpResult;
 import javazoom.jl.player.Player;
 import lombok.SneakyThrows;
-import org.apache.commons.codec.digest.DigestUtils;
 
 import java.io.InputStream;
 import java.util.UUID;
+
+import static cn.hutool.crypto.digest.DigestUtil.sha256Hex;
 
 public class YoudaoTTS {
 
@@ -23,7 +24,7 @@ public class YoudaoTTS {
         String salt = UUID.randomUUID().toString();
         long currentTime = System.currentTimeMillis() / 1000;
         String originalString = appKey + input + salt + currentTime + appSecret;
-        String sign = DigestUtils.sha256Hex(originalString);
+        String sign = sha256Hex(originalString);
         HttpResult post = http.sync("/ttsapi").addBodyPara("q", input)
                 .addBodyPara("langType", "en-USA")
                 .addBodyPara("voice", "1")

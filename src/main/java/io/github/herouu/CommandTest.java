@@ -17,11 +17,6 @@ public class CommandTest implements Runnable {
 
     @Override
     public void run() {
-        if (allFiles) {
-            System.out.println("1");
-        } else {
-            System.out.println("2");
-        }
         spec.commandLine().usage(System.out);
     }
 }
